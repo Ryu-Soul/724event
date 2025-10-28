@@ -7,21 +7,43 @@ import "./style.scss";
 const Slider = () => {
   const { data } = useData();
   const [index, setIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false)
   
   const byDateDesc = data?.focus?.sort((evtA, evtB) =>
     new Date(evtA.date) < new Date(evtB.date) ? -1 : 1 
   )|| [];
-  const nextCard = () => {
-    setTimeout(
-      () => setIndex(index < byDateDesc.length - 1 ? index + 1 : 0),
-      5000
-    );
-  };
+
   useEffect(() => {
-    nextCard();
-  });
+  const handleKeyDown = (e) => {
+    if (e.key === " ") {
+      e.preventDefault();
+      setIsPaused(!isPaused);
+      }
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+
+  return () => {
+    window.removeEventListener("keydown", handleKeyDown);
+  };
+  }, [isPaused]);
+
+  useEffect(() => {
+    let timer;
+    if (!isPaused) {
+      const nextCard = () => {
+        setIndex((prevIndex) =>
+          prevIndex < byDateDesc.length - 1 ? prevIndex + 1 : 0
+        );
+      };
+      timer = setTimeout(nextCard, 5000);
+    }
+
+    return () => clearTimeout(timer);
+  }, [index, byDateDesc.length, isPaused]);
+
   return (
-    <div className="SlideCardList">
+    <div className="SlideCardList" data-testid="slider" data-paused={isPaused}>
       {byDateDesc?.map((focus, idx) => (
           <div
             key={focus.title}
