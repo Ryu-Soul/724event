@@ -30,20 +30,24 @@ export const DataProvider = ({ children }) => {
     if (data) return;
     getData();
   });
-  
+  const events = data?.events || [];
+  const sorted = [...events]
+    .map((e) => ({ ...e, date: new Date(e.date) }))
+    .sort((a, b) => b.date - a.date);
+  const last = sorted[0] || null;
   return (
     <DataContext.Provider
       // eslint-disable-next-line react/jsx-no-constructed-context-values
       value={{
         data,
         error,
+        last,
       }}
     >
       {children}
     </DataContext.Provider>
   );
 };
-
 DataProvider.propTypes = {
   children: PropTypes.node.isRequired,
 }
